@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLARIS HEAT — an open-world crime game</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #1a1026; }
+  body { font-family: Verdana, Geneva, Tahoma, sans-serif; color: #fff; }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
+  #stats { position: absolute; top: 16px; left: 18px; text-shadow: 0 2px 6px rgba(0,0,0,.7); }
+  #health-bar { width: 210px; height: 13px; background: rgba(0,0,0,.55); border: 2px solid rgba(255,255,255,.75); border-radius: 7px; overflow: hidden; }
+  #health-fill { height: 100%; width: 100%; background: #53d769; transition: width .18s ease, background .3s ease; }
+  #cash { margin-top: 6px; font-size: 24px; font-weight: bold; color: #7be495; letter-spacing: .5px; }
+  #clock { font-size: 12px; color: #ffe1ae; opacity: .9; }
+  #stars { position: absolute; top: 12px; right: 18px; font-size: 30px; letter-spacing: 3px; opacity: .25; text-shadow: 0 2px 8px rgba(0,0,0,.8); transition: opacity .3s; }
+  #stars .star { color: #5a5a66; }
+  #stars .star.lit { color: #ffd02a; }
+  #objective { position: absolute; top: 58px; right: 18px; max-width: 330px; text-align: right; font-size: 14.5px; line-height: 1.45; color: #ffe9c4; text-shadow: 0 2px 6px rgba(0,0,0,.85); display: none; }
+  #objective b { color: #ffd02a; }
+  #feed { position: absolute; left: 18px; bottom: 118px; width: 360px; }
+  .feed-line { background: rgba(10,8,20,.62); border-left: 4px solid #ffd98a; padding: 6px 10px; margin-top: 6px; font-size: 13.5px; border-radius: 0 6px 6px 0; transition: opacity .6s; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+  #banner { position: absolute; top: 21%; left: 0; right: 0; text-align: center; opacity: 0; transition: opacity .45s; text-shadow: 0 3px 14px rgba(0,0,0,.8); }
+  #banner-title { font-size: 42px; font-weight: bold; letter-spacing: 3px; color: #ffd98a; text-transform: uppercase; }
+  #banner-sub { font-size: 17px; color: #fff; margin-top: 4px; }
+  #prompt { position: absolute; bottom: 15%; left: 0; right: 0; text-align: center; font-size: 17px; display: none; text-shadow: 0 2px 8px rgba(0,0,0,.9); }
+  #prompt b { background: rgba(255,255,255,.92); color: #181424; border-radius: 5px; padding: 1px 8px; margin-right: 6px; }
+  #map-wrap { position: absolute; right: 18px; bottom: 16px; text-align: center; }
+  #minimap { width: 190px; height: 190px; border: 3px solid rgba(255,255,255,.8); border-radius: 50%; background: #175263; box-shadow: 0 4px 18px rgba(0,0,0,.55); }
+  #speedo { margin-top: 3px; font-size: 15px; font-weight: bold; text-shadow: 0 2px 6px rgba(0,0,0,.8); min-height: 18px; }
+  #radio-label { position: absolute; bottom: 20px; left: 0; right: 0; text-align: center; font-size: 14px; color: #ffd98a; text-shadow: 0 2px 6px rgba(0,0,0,.85); }
+  #crosshair { position: absolute; top: 50%; left: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,.9); box-shadow: 0 0 6px rgba(0,0,0,.9); display: none; }
+  #damage-vignette { position: fixed; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 52%, rgba(200,20,10,.55) 100%); opacity: 0; transition: opacity .12s; z-index: 6; }
+
+  /* ---------- Screens ---------- */
+  .screen { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #title-screen { background: linear-gradient(180deg, rgba(26,12,44,.25) 0%, rgba(26,12,44,.08) 45%, rgba(20,8,30,.55) 100%); }
+  #title-screen h1 { font-size: 84px; margin: 0; letter-spacing: 6px; font-weight: 900; background: linear-gradient(180deg, #ffe9a8 15%, #ffb35c 48%, #ff5e7a 85%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 0 rgba(90,10,60,.55)) drop-shadow(0 10px 26px rgba(0,0,0,.6)); }
+  #title-screen h2 { margin: 2px 0 0; font-size: 19px; letter-spacing: 7px; color: #bfefff; text-shadow: 0 2px 10px rgba(0,0,0,.75); font-weight: normal; }
+  #title-screen .tagline { margin-top: 14px; font-size: 15.5px; color: #ffe9c4; text-shadow: 0 2px 8px rgba(0,0,0,.85); max-width: 560px; line-height: 1.5; }
+  #play-hint { margin-top: 30px; font-size: 19px; color: #fff; background: rgba(226,84,62,.92); padding: 11px 30px; border-radius: 30px; box-shadow: 0 6px 22px rgba(0,0,0,.5); animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.055); } }
+  #controls { margin-top: 26px; display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-size: 13px; color: #e8e2f2; text-shadow: 0 1px 5px rgba(0,0,0,.9); text-align: left; }
+  #controls b { color: #ffd98a; text-align: right; }
+  #title-screen .credit { position: absolute; bottom: 14px; font-size: 12px; color: rgba(255,255,255,.65); text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  #pause-screen, #end-screen { background: rgba(12,8,24,.72); }
+  #pause-screen h1, #end-screen h1 { font-size: 58px; letter-spacing: 5px; margin: 0 0 8px; }
+  #end-screen h1.busted { color: #6db3ff; }
+  #end-screen h1.wasted { color: #ff5147; }
+  #pause-screen p, #end-screen p { font-size: 16.5px; color: #ffe9c4; margin: 4px 0; }
+  #status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+</style>
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.min.js" } }
+</script>
+</head>
+<body>
+<canvas id="game" aria-label="SOLARIS HEAT: an open-world crime game in the coastal city of Solaris Bay"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="stats">
+    <div id="health-bar"><div id="health-fill"></div></div>
+    <div id="cash">$0</div>
+    <div id="clock">GOLDEN HOUR · SOLARIS BAY</div>
+  </div>
+  <div id="stars"><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span></div>
+  <div id="objective"></div>
+  <div id="feed"></div>
+  <div id="banner"><div id="banner-title"></div><div id="banner-sub"></div></div>
+  <div id="prompt"></div>
+  <div id="map-wrap">
+    <canvas id="minimap" width="190" height="190"></canvas>
+    <div id="speedo"></div>
+  </div>
+  <div id="radio-label"></div>
+  <div id="crosshair"></div>
+</div>
+<div id="damage-vignette"></div>
+
+<div id="title-screen" class="screen">
+  <h1>SOLARIS HEAT</h1>
+  <h2>SOLARIS BAY · EST. SUNSET</h2>
+  <p class="tagline">One city, one fixer, one reputation to build. Run Marisol Vega's jobs, feed the meter with taxi fares, and stay one corner ahead of Solaris PD.</p>
+  <div id="play-hint">CLICK TO PLAY</div>
+  <div id="controls">
+    <b>W A S D</b><span>Move / drive</span>
+    <b>Mouse</b><span>Camera (click locks the pointer)</span>
+    <b>Shift</b><span>Sprint</span>
+    <b>F</b><span>Enter / exit car</span>
+    <b>Click</b><span>Shoot on foot</span>
+    <b>T</b><span>Taxi fare (in a car)</span>
+    <b>R</b><span>Radio · <b>H</b> horn · <b>P</b> pause · <b>M</b> mute</span>
+  </div>
+  <p class="credit">An original game: city, story, people and sounds made for this entry. Best with sound on.</p>
+</div>
+
+<div id="pause-screen" class="screen hidden">
+  <h1>PAUSED</h1>
+  <p>Click to keep playing. Your cash and story progress are saved automatically.</p>
+</div>
+
+<div id="end-screen" class="screen hidden">
+  <h1 id="end-title">BUSTED</h1>
+  <p id="end-sub">Solaris PD got their collar.</p>
+  <p>Click to get back on the street.</p>
+</div>
+
+<p id="status" role="status" aria-live="polite"></p>
+<script type="module" src="./src/game.js"></script>
+</body>
+</html>
