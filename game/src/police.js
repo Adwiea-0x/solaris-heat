@@ -137,7 +137,7 @@ export class Police {
       skid.position.set(sx, -1.25, 0);
       this.heli.add(skid);
     }
-    this.spot = new THREE.SpotLight(0xfff2cf, 0, 90, 0.32, 0.45, 0.6);
+    this.spot = new THREE.SpotLight(0xfff2cf, 0, 90, 0.27, 0.45, 0.6);
     this.spot.position.set(0, -1, 0);
     this.heli.add(this.spot);
     this.heli.add(this.spot.target);
@@ -236,7 +236,7 @@ export class Police {
       this.heli.rotation.y = Math.atan2(ctx.playerPos.x - this.heliPos.x, ctx.playerPos.z - this.heliPos.z);
       this.rotor.rotation.y += dt * 28;
       this.tailRotor.rotation.x += dt * 34;
-      this.spot.intensity = 900;
+      this.spot.intensity = 430;
       this.spot.target.position.set(ctx.playerPos.x - this.heliPos.x, -27, ctx.playerPos.z - this.heliPos.z);
       this.beam.material.opacity = 0.09 + Math.sin(ctx.t * 7) * 0.02;
     } else {

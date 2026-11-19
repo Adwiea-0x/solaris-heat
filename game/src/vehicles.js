@@ -160,8 +160,9 @@ const DIRS = [
 
 /** The lane centre for travelling `dir` along the road whose centre is `centre`. */
 function laneCoord(dir, centre) {
-  // Right-hand traffic: the lane sits to the right of the direction of travel.
-  if (dir === 0) return centre + LANE; // heading +z: lane is at +x... verified below
+  // One lane each way: opposing directions always get opposite offsets, so
+  // the two streams pass without meeting, whichever side of the road it is.
+  if (dir === 0) return centre + LANE;
   if (dir === 2) return centre - LANE;
   if (dir === 1) return centre - LANE;
   return centre + LANE;
@@ -175,7 +176,7 @@ class TrafficCar {
     this.mesh = createCarMesh(rng, this.style, this.style === 'taxi' ? 0xf2b13d : rng.pick(CAR_COLORS));
     this.spec = CAR_SPECS[this.style];
     this.speed = 0;
-    this.cruise = rng.range(9, 14);
+    this.cruise = rng.range(10, 15);
     // Start on a random road, mid-block, heading along it.
     this.dir = rng.int(0, 3);
     const vertical = this.dir === 0 || this.dir === 2;

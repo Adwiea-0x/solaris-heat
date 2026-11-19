@@ -47,7 +47,7 @@ export class Game {
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.12;
+    this.renderer.toneMappingExposure = 1.2;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.scene = new THREE.Scene();
     this.scene.fog = new THREE.Fog(0xdd7a52, 120, 460);
@@ -70,7 +70,13 @@ export class Game {
     this.sun.shadow.bias = -0.0006;
     this.scene.add(this.sun);
     this.scene.add(this.sun.target);
-    this.scene.add(new THREE.HemisphereLight(0xcf9fff, 0x8a5a3a, 0.6));
+    this.scene.add(new THREE.HemisphereLight(0xcf9fff, 0x8a5a3a, 0.75));
+    // Warm bounce off the bay: a soft shadowless fill from the east, so the
+    // faces turned away from the sunset stay readable instead of going black.
+    const bounce = new THREE.DirectionalLight(0xff9a6b, 0.55);
+    bounce.position.set(190, 90, 80);
+    this.scene.add(bounce);
+    this.scene.add(bounce.target);
 
     // ---- world ----
     this.city = buildCity(this.scene, this.rng);

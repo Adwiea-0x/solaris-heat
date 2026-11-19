@@ -40,7 +40,7 @@ function stageTitle(game) {
   game.placeHeroCar(168, 30, Math.PI); // facing south along the promenade
   game.teleportPlayer(163.5, 35.5, -2.2);
   runSteps(game, 36, null);
-  game.setShotCamera([181, 5.2, 52], [150, 2.5, 8]);
+  game.setShotCamera([180, 4.2, 50], [152, 2.2, 14]);
   game.showTitleScreen();
 }
 
@@ -50,15 +50,36 @@ function stageChase(game) {
   game.enterCarInstant(car);
   game.setWanted(4, true);
   // Two interceptors tucked in behind, one alongside the beach lane.
-  game.spawnShotInterceptor(78, -3.4, Math.PI / 2);
-  game.spawnShotInterceptor(84, 3.6, Math.PI / 2);
-  game.spawnShotInterceptor(66, -3.4, Math.PI / 2);
+  const units = [
+    game.spawnShotInterceptor(78, -3.4, Math.PI / 2),
+    game.spawnShotInterceptor(84, 3.6, Math.PI / 2),
+    game.spawnShotInterceptor(66, -3.4, Math.PI / 2),
+  ];
   game.hud.setObjective('<b>Lose the heat</b> — break line of sight');
   runSteps(game, 52, (i) => {
     game.scriptInput = { forward: true, steer: i < 8 ? 0.12 : 0 };
   });
+  // The pursuit scatters over a long run; re-form it tight behind the car so
+  // the frame reads as one chase, then let it settle for a few steps.
+  const p = car.mesh.position;
+  const h = car.heading;
+  const fx = Math.sin(h);
+  const fz = Math.cos(h);
+  const rx = Math.cos(h);
+  const rz = -Math.sin(h);
+  const formation = [[-14, -3.2], [-21, 3.4], [-8.5, 5.4]];
+  units.forEach((unit, i) => {
+    const [back, side] = formation[i];
+    unit.mesh.position.set(p.x + fx * back + rx * side, 0, p.z + fz * back + rz * side);
+    unit.heading = h;
+    unit.mesh.rotation.y = h;
+    unit.speed = car.speed;
+  });
+  runSteps(game, 5, () => {
+    game.scriptInput = { forward: true, steer: 0 };
+  });
   game.scriptInput = null;
-  game.setShotCameraBehindCar(11, 3.4, 0.35);
+  game.setShotCameraBehindCar(11.5, 3.6, 0.3);
 }
 
 /** Meeting the fixer: beacon, objective, minimap marker, the garage. */
@@ -73,20 +94,20 @@ function stageMission(game) {
 
 /** Caught: hands up, two units angled in, officers covering. */
 function stageBusted(game) {
-  game.teleportPlayer(2, 30, 0.4);
+  game.teleportPlayer(2, 44, 0.5);
   poseHandsUp(game.playerMesh);
   game.setWanted(3, true);
-  const copA = game.spawnShotInterceptor(7.5, 38, -2.5);
-  const copB = game.spawnShotInterceptor(-6, 22.5, 0.9);
-  const officerA = game.spawnOfficer(4.6, 33.5, -2.2);
-  const officerB = game.spawnOfficer(-3.4, 26.5, 0.75);
+  const copA = game.spawnShotInterceptor(8.5, 51, -2.35);
+  const copB = game.spawnShotInterceptor(-5.5, 36.5, 0.85);
+  const officerA = game.spawnOfficer(5.6, 47.5, -2.1);
+  const officerB = game.spawnOfficer(-2.2, 40.8, 0.7);
   poseAim(officerA);
   poseAim(officerB);
   game.police.bustedMeter = 1;
   game.hud.banner('BUSTED', 'Solaris PD got their collar');
   runSteps(game, 24, null);
   // The pursuit steps nudged the units; put the arrest back exactly as staged.
-  for (const [unit, x, z, heading] of [[copA, 7.5, 38, -2.5], [copB, -6, 22.5, 0.9]]) {
+  for (const [unit, x, z, heading] of [[copA, 8.5, 51, -2.35], [copB, -5.5, 36.5, 0.85]]) {
     unit.mesh.position.set(x, 0, z);
     unit.mesh.rotation.y = heading;
     unit.heading = heading;
@@ -94,5 +115,5 @@ function stageBusted(game) {
   }
   game.police.bustedMeter = 1;
   poseHandsUp(game.playerMesh);
-  game.setShotCamera([10.5, 3.4, 41], [0, 1.3, 30]);
+  game.setShotCamera([6.5, 2.6, 57.5], [1.5, 1.2, 43.5]);
 }

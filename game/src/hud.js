@@ -141,7 +141,7 @@ export class HUD {
     g.lineWidth = 3;
     g.beginPath(); g.moveTo(pierX0, pierY); g.lineTo(pierX1, pierY); g.stroke();
 
-    // Mission / fare marker: a pulsing gold diamond.
+    // Mission / fare marker: a pulsing gold diamond in a white ring.
     if (view.marker) {
       const [mx, my] = this.mapPoint(view.marker.x, view.marker.z);
       const pulse = 4.5 + Math.sin(t * 5) * 1.4;
@@ -151,6 +151,9 @@ export class HUD {
       g.rotate(Math.PI / 4);
       g.fillRect(-pulse / 1.4, -pulse / 1.4, pulse * 1.4, pulse * 1.4);
       g.restore();
+      g.strokeStyle = 'rgba(255,255,255,0.9)';
+      g.lineWidth = 1.4;
+      g.beginPath(); g.arc(mx, my, pulse + 2.6, 0, Math.PI * 2); g.stroke();
     }
     // The fixer's garage: a violet dot.
     if (view.fixer) {

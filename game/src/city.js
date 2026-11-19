@@ -356,6 +356,56 @@ export function buildCity(scene, rng) {
   scene.add(lampPoles);
   scene.add(lampHeads);
 
+  // ---- street furniture: hydrants, bus shelters, promenade planters -------
+  const hydrantMat = new THREE.MeshStandardMaterial({ color: 0xd23b2e, roughness: 0.55 });
+  const hydrantGeo = new THREE.CylinderGeometry(0.16, 0.2, 0.62, 8);
+  for (const rx of LAYOUT.roadXs) {
+    for (const rz of LAYOUT.roadZs) {
+      if (!rng.chance(0.4)) continue;
+      const hydrant = new THREE.Mesh(hydrantGeo, hydrantMat);
+      hydrant.position.set(rx + 8.3, 0.31, rz - 8.3);
+      hydrant.castShadow = true;
+      scene.add(hydrant);
+    }
+  }
+  const shelterMat = new THREE.MeshStandardMaterial({ color: 0x2a9db5, roughness: 0.6, metalness: 0.3 });
+  for (const sz of [-78, 0, 78]) {
+    const shelter = new THREE.Group();
+    for (const px of [-2.2, 2.2]) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.5, 0.14), shelterMat);
+      post.position.set(px, 1.25, 0);
+      shelter.add(post);
+    }
+    const roofSlab = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.14, 1.7), shelterMat);
+    roofSlab.position.y = 2.55;
+    roofSlab.castShadow = true;
+    shelter.add(roofSlab);
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.12, 0.5), darkMat);
+    bench.position.set(0, 0.62, -0.3);
+    shelter.add(bench);
+    const adPanel = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.5, 1.9),
+      new THREE.MeshStandardMaterial({ map: billboardTexture(rng, 'BUS SOL', 'Ride the bay', 190, 150), roughness: 0.7 }),
+    );
+    adPanel.position.set(-2.9, 1.15, 0);
+    adPanel.rotation.y = Math.PI / 2;
+    shelter.add(adPanel);
+    shelter.position.set(163.5, 0, sz);
+    scene.add(shelter);
+    addCollider(163.5, sz, 1.4, 5.4, 2.5);
+  }
+  const planterMat = new THREE.MeshStandardMaterial({ color: 0xb8a88e, roughness: 0.95 });
+  const shrubMat = new THREE.MeshStandardMaterial({ color: 0x3e7d3a, roughness: 1 });
+  for (let z = -156; z <= 156; z += 26) {
+    const planter = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.55, 1.6), planterMat);
+    planter.position.set(173.5, 0.28, z);
+    scene.add(planter);
+    const shrub = new THREE.Mesh(new THREE.SphereGeometry(0.85, 8, 6), shrubMat);
+    shrub.position.set(173.5, 0.95, z);
+    shrub.castShadow = true;
+    scene.add(shrub);
+  }
+
   // ---- traffic lights ------------------------------------------------------
   const heads = [];
   for (const rx of LAYOUT.roadXs) {

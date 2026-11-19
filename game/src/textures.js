@@ -221,27 +221,37 @@ export function groundTexture(layout) {
   return canvasTexture(canvas);
 }
 
-/** A palm frond sprite: feathered leaflets on a curved rib, alpha-tested. */
+/** A palm frond sprite: full, sunlit leaflets on a curved rib, alpha-tested. */
 export function frondTexture() {
   const [canvas, g] = makeCanvas(256, 256);
   g.clearRect(0, 0, 256, 256);
-  g.strokeStyle = '#2e6b34';
-  g.lineWidth = 5;
-  g.beginPath();
-  g.moveTo(8, 248);
-  g.quadraticCurveTo(90, 120, 244, 44);
-  g.stroke();
-  g.lineWidth = 3;
-  for (let i = 0; i < 22; i += 1) {
-    const t = i / 22;
-    const x = 8 + (244 - 8) * t;
-    const y = 248 - 204 * t + 30 * t * t;
-    g.strokeStyle = i % 2 ? '#35793c' : '#2a6330';
+  // Leaflets first, fanned wide and drooping, in two sunlit greens so the
+  // crown reads as foliage against the sky instead of dark scratches.
+  for (let i = 0; i < 30; i += 1) {
+    const t = i / 30;
+    const x = 6 + (246 - 6) * t;
+    const y = 250 - 208 * t + 34 * t * t;
+    g.strokeStyle = i % 3 === 0 ? '#5cb85f' : i % 3 === 1 ? '#43a047' : '#36823c';
+    g.lineWidth = 6.5;
+    g.lineCap = 'round';
     g.beginPath();
     g.moveTo(x, y);
-    g.lineTo(x + 12, y + 44 - t * 16);
+    g.quadraticCurveTo(x + 16, y + 26 - t * 10, x + 10, y + 62 - t * 26);
+    g.stroke();
+    // A shorter leaflet angled up, for fullness near the rib.
+    g.lineWidth = 5;
+    g.beginPath();
+    g.moveTo(x, y);
+    g.quadraticCurveTo(x + 22, y + 6, x + 30, y + 26 - t * 8);
     g.stroke();
   }
+  // The rib on top, so the leaflets hang from it.
+  g.strokeStyle = '#2f7a38';
+  g.lineWidth = 7;
+  g.beginPath();
+  g.moveTo(6, 250);
+  g.quadraticCurveTo(90, 118, 246, 42);
+  g.stroke();
   const texture = canvasTexture(canvas);
   texture.wrapS = THREE.ClampToEdgeWrapping;
   return texture;

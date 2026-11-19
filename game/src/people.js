@@ -129,8 +129,11 @@ class Pedestrian {
     this.phase = rng.range(0, 6);
     this.speed = rng.range(1.1, 1.7);
     // A loop to walk: a block's sidewalk ring, the promenade, or the pier.
-    const kind = rng.pick(['block', 'block', 'block', 'promenade', 'pier']);
-    if (kind === 'block') {
+    const kind = rng.pick(['block', 'block', 'block', 'promenade', 'pier', 'beach']);
+    if (kind === 'beach') {
+      const x = LAYOUT.beachX + rng.range(5, 14);
+      this.path = [[x, -158], [x, 158]];
+    } else if (kind === 'block') {
       const block = rng.pick(LAYOUT.blocks);
       const r = LAYOUT.blockSize / 2 + 1.6;
       this.path = [
